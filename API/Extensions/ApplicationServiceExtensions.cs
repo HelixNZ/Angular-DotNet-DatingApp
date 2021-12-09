@@ -1,4 +1,5 @@
 using API.Data;
+using API.Helpers;
 using API.Interfaces;
 using API.Services;
 using Microsoft.EntityFrameworkCore;
@@ -11,6 +12,8 @@ namespace API.Extensions
 		{
 			//Lifetime
 			services.AddScoped<ITokenService, TokenService>();
+			services.AddScoped<IUserRepository, UserRepository>(); //User repo
+			services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
 
 			//Add database context
 			services.AddDbContext<DataContext>(options =>
