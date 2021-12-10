@@ -10,9 +10,12 @@ namespace API.Extensions
 	{
 		public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration config)
 		{
+			services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
+
 			//Lifetime
 			services.AddScoped<ITokenService, TokenService>();
 			services.AddScoped<IUserRepository, UserRepository>(); //User repo
+			services.AddScoped<IPhotoService, PhotoService>(); //Cloudinary
 			services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
 
 			//Add database context
