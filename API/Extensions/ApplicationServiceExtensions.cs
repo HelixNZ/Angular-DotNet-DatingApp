@@ -2,6 +2,7 @@ using API.Data;
 using API.Helpers;
 using API.Interfaces;
 using API.Services;
+using API.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Extensions
@@ -19,6 +20,7 @@ namespace API.Extensions
 			services.AddScoped<IMessageRepository, MessageRepository>(); //Message system
 			services.AddScoped<IPhotoService, PhotoService>(); //Cloudinary
 			services.AddScoped<LogUserActivity>(); //Last Seen
+			services.AddSingleton<PresenceTracker>(); //Presence
 			services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
 
 			//Add database context
