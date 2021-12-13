@@ -9,6 +9,9 @@ namespace API
     {
         public static async Task Main(string[] args)
         {
+            //Fix for date-time EF6.0+/DB6.0+ breaking changes on UTC/Undef issue
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
             var host = CreateHostBuilder(args).Build();
 
             using var scope = host.Services.CreateScope();
