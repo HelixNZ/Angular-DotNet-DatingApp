@@ -92,7 +92,7 @@ namespace API.Data
 				.ToListAsync();
 
 			//Check for unread
-			var unreadMessages = messages.Where(m => m.DateRead == null && m.RecipientUsername == currentUsername).ToList();
+            var unreadMessages = await _context.Messages.Where(m => m.DateRead == null && m.RecipientUsername == currentUsername).ToListAsync();
 
 			//Mark read
 			if (unreadMessages.Any())
