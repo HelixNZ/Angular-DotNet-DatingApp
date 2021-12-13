@@ -14,13 +14,11 @@ namespace API.Extensions
 			services.Configure<CloudinarySettings>(config.GetSection("CloudinarySettings"));
 
 			//Lifetime
-			services.AddScoped<ITokenService, TokenService>();
-			services.AddScoped<IUserRepository, UserRepository>(); //User repo
-			services.AddScoped<ILikesRepository, LikesRepository>(); //Likes system
-			services.AddScoped<IMessageRepository, MessageRepository>(); //Message system
+			services.AddSingleton<PresenceTracker>(); //Presence
+			services.AddScoped<ITokenService, TokenService>(); //JWT tokens
+			services.AddScoped<IUnitOfWork, UnitOfWork>(); //Repo handler
 			services.AddScoped<IPhotoService, PhotoService>(); //Cloudinary
 			services.AddScoped<LogUserActivity>(); //Last Seen
-			services.AddSingleton<PresenceTracker>(); //Presence
 			services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
 
 			//Add database context
