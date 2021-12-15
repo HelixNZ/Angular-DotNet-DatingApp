@@ -12,6 +12,7 @@ public class DataContext : IdentityDbContext<AppUser,
 	public DbSet<UserLike> Likes { get; set; }
 	public DbSet<Message> Messages { get; set; }
 	public DbSet<Group> Groups { get; set; }
+	public DbSet<Photo> Photos { get; set; }
 	public DbSet<Connection> Connections { get; set; }
 
 	public DataContext(DbContextOptions options) : base(options)
@@ -37,6 +38,9 @@ public class DataContext : IdentityDbContext<AppUser,
 
 		//Our framework
 		builder.Entity<UserLike>().HasKey(k => new { k.SourceUserId, k.LikedUserId });
+
+		//Filter out unapproved photos by default
+		builder.Entity<Photo>().HasQueryFilter(p => p.IsApproved);
 
 		builder.Entity<UserLike>()
 			.HasOne(s => s.SourceUser)

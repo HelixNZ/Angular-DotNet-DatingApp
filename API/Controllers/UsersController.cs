@@ -34,7 +34,8 @@ public class UsersController : BaseApiController
 	[HttpGet("{username}", Name = "GetUser")]
 	public async Task<ActionResult<MemberDto>> GetUser(string username)
 	{
-		return await _unitOfWork.UserRepository.GetMemberAsync(username);
+		var currentUser = User.GetUsername();
+		return await _unitOfWork.UserRepository.GetMemberAsync(username, isCurrentUser: currentUser == username);
 	}
 
 	[HttpPut]
@@ -58,13 +59,14 @@ public class UsersController : BaseApiController
 		var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
 		var result = await _photoService.AddPhotoAsync(file);
 
+		//Cloudinary response
 		if (result.Error != null) return BadRequest(result.Error.Message);
 
 		var photo = new Photo
 		{
 			Url = result.SecureUrl.AbsoluteUri,
 			PublicId = result.PublicId,
-			IsMain = (user.Photos.Count == 0) //set main if no photos
+			//IsMain = (user.Photos.Count == 0) //set main if no photos {removed due to requiring approval now}
 		};
 
 		user.Photos.Add(photo);
@@ -83,7 +85,8 @@ public class UsersController : BaseApiController
 		var user = await _unitOfWork.UserRepository.GetUserByUsernameAsync(User.GetUsername());
 		var photo = user.Photos.FirstOrDefault(x => x.Id == photoId);
 
-		if (photo.IsMain) return BadRequest("This is alread your main photo");
+		if (photo.IsMain) return BadRequest("This is already your main photo");
+		if (!photo.IsApproved) return BadRequest("This photo is not approved and cannot be used yet");
 
 		var currentMain = user.Photos.FirstOrDefault(x => x.IsMain);
 

@@ -3,10 +3,14 @@ namespace API.Controllers;
 public class AdminController : BaseApiController
 {
 	private readonly UserManager<AppUser> _userManager;
+	private readonly IUnitOfWork _unitOfWork;
+	private readonly IPhotoService _photoService;
 
-	public AdminController(UserManager<AppUser> userManager)
+	public AdminController(UserManager<AppUser> userManager, IUnitOfWork unitOfWork, IPhotoService photoService)
 	{
 		_userManager = userManager;
+		_unitOfWork = unitOfWork;
+		_photoService = photoService;
 	}
 
 	[Authorize(Policy = "RequireAdminRole")]
@@ -51,8 +55,49 @@ public class AdminController : BaseApiController
 
 	[Authorize(Policy = "ModeratePhotoRole")]
 	[HttpGet("photos-to-moderate")]
-	public ActionResult GetPhotosForModeration()
+	public async Task<ActionResult> GetPhotosForModeration()
 	{
-		return Ok("Admins or moderators can see this");
+		var photos = await _unitOfWork.PhotoRepository.GetUnapprovedPhotos();
+		return Ok(photos);
+	}
+
+	[Authorize(Policy = "ModeratePhotoRole")]
+	[HttpPost("photo-status/{operation}/{photoId}")]
+	public async Task<ActionResult> EditPhotoStatus(string operation, int photoId)
+	{
+		if (operation != "approve" && operation != "reject") return BadRequest("Invalid photo status operation");
+
+		var photo = await _unitOfWork.PhotoRepository.GetPhotoByIdAsync(photoId);
+		if (photo == null) return NotFound("Photo not found");
+
+		if (operation == "approve")
+		{
+			//set approved
+			photo.IsApproved = true;
+
+			var user = await _unitOfWork.UserRepository.GetUserByPhotoIdAsync(photoId);
+
+			if(!user.Photos.Any(x => x.IsMain)) photo.IsMain = true;
+
+		}
+		else if (operation == "reject")
+		{
+			//Cloud delete
+			if (photo.PublicId != null)
+			{
+				var result = await _photoService.DeletePhotoAsync(photo.PublicId);
+				if (result.Error != null) return BadRequest(result.Error.Message);
+			}
+
+			_unitOfWork.PhotoRepository.RemovePhoto(photo);
+		}
+		else
+		{
+			return BadRequest("Invalid photo status operation");
+		}
+
+		if (await _unitOfWork.Complete()) return Ok();
+
+		return BadRequest("Failed to update the status on the photo");
 	}
 }

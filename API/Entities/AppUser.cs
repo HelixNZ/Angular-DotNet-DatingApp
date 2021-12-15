@@ -2,7 +2,7 @@ namespace API.Entities;
 
 public class AppUser : IdentityUser<int>
 {
-	public DateTime DateOfBirth { get; set; } //Can use DateOnly in 6.*+
+	public DateTime DateOfBirth { get; set; } //Can use DateOnly in 6.0+
 	public string KnownAs { get; set; }
 	public DateTime Created { get; set; } = DateTime.Now;
 	public DateTime LastActive { get; set; } = DateTime.Now;
